@@ -93,4 +93,72 @@ hdfs://had002:9000/RELEASE \
 hdfs://had002:9000/out
 ```
 
-## 1.3 spark-core
+## 1.3 spark Idea
+- 尝试N次后，放弃用maven构建spark工程，改用gradle
+- 下载与spark等同版本的scala包，指定global lib scala spark/jars
+- idea安装scala插件
+- idea指定gradle/bin 本地路径
+- 本地建立gradle项目，不勾选模板
+- 编辑gradle文件, 指定rep 及依赖项
+
+``` gradle
+plugins {
+    id 'java'
+}
+
+group 'com.phoenix'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven {
+        url 'http://maven.aliyun.com/nexus/content/groups/public/'
+    }
+    mavenCentral()
+
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.12'
+    testCompile "org.scala-lang:scala-library:2.11.12"
+    compile group: 'org.apache.spark', name: 'spark-core_2.11', version: '2.4.10'
+
+}
+```
+
+- 编码 
+
+``` scala
+import org.apache.spark.{SparkConf, SparkContext}
+import org.slf4j.LoggerFactory
+
+object wordCount {
+  val logger = LoggerFactory.getLogger(wordCount.getClass)
+
+  def main(args: Array[String]){
+    val conf = new SparkConf().setAppName("WC")
+    val sc = new SparkContext(conf)
+
+
+    sc.textFile(args(0)).flatMap(_.split(" "))
+      .map((_, 1)).reduceByKey(_ + _, 1)
+      .sortBy(_._2, false).saveAsTextFile(args(1))
+
+    logger.info("complete")
+    sc.stop()
+  }
+}
+
+```
+
+- spark-submit
+
+``` bash
+ bin/spark-submit --class wordCount \
+> /opt/test/sparkdemo-0.3.jar \
+> hdfs://had002:9000/README.txt \
+> hdfs://had002:9000/out2
+```
+
