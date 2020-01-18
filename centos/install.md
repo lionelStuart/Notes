@@ -120,6 +120,15 @@ SIGPIPE                 写入关闭的管道或socket
 SIGINT      2           ctrl+c
 SIGKILL     9           强杀进程
 SIGTERM     15          正常终止
+
+
+kill        杀死pid
+pkill       匹配杀死
+
+
+cmd&            后台执行
+nohup cmd&      注销可用
+jobs            显示工作
 ```
 
 ## 2.组件
