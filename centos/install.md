@@ -131,6 +131,24 @@ nohup cmd&      注销可用
 jobs            显示工作
 ```
 
+#### 1.8 windows Linuxz子环境 （WSL）
+- 开启开发者模式，程序 >安装linux子系统
+- windows stores >安装ubuntu
+- 启动系统，创建用户名
+- ssh配置
+  - sudo vi /etc/ssh/sshd_config
+  ```
+    Port 2222
+    PasswoedAuthentication yes
+    ssh_host_key & ecdsa_key & ed:25519_key
+  ```
+  - sudo service ssh --full-restart
+  - sudo service ssh start
+  - 配置mobax, localhost:2222@username
+ 
+#### 1.9 Tips
+ - auth failure : sudo passwd root etc.
+
 ## 2.组件
 
 #### 2.1 seaweed
