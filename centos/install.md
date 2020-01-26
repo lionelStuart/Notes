@@ -174,3 +174,52 @@ curl http://localhost:9333/dir/lookup?volumeId=xxx
 
 # use docker 
 ```
+
+## 3.k8s
+
+#### 3.1 安装VirtualBox
+
+- 没有硬件虚拟化，则需要安装
+```
+sudo yum install kernel-devel kernel-headers make patch gcc
+
+sudo wget https://download.virtualbox.org/virtualbox/rpm/el/virtualbox.repo -P /etc/yum.repos.d
+
+sudo yum install VirtualBox-5.2
+
+# Ext
+wget https://download.virtualbox.org/virtualbox/5.2.20/Oracle_VM_VirtualBox_Extension_Pack-5.2.20.vbox-extpack
+
+sudo VBoxManage extpack install  Oracle_VM_VirtualBox_Extension_Pack-5.2.20.vbox-extpack
+
+# 验证
+systemctl status vboxdrv
+
+# url
+https://www.linuxidc.com/Linux/2018-11/155220.htm
+```
+
+
+
+#### 3.2 安装minikube 
+
+
+```
+curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.2.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+
+# start
+minikube start --registry-mirror=https://registry.docker-cn.com 
+
+# install kubectl 
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+
+# install web ui
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta1/aio/deploy/recommended.yaml
+
+kubectl proxy
+
+# open dashboard
+minikube dashboard
+
+```
+
