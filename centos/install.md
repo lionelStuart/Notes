@@ -54,6 +54,8 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 #### 1.6 docker
 
+- install
+
 ```
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2 
 yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo 
@@ -68,6 +70,27 @@ sudo usermod -aG docker $USER
 
 
 ```
+
+- errors
+  - PULL timeout
+  ```
+  vi /etc/docker/daemon.json
+    {
+  "registry-mirrors": ["https://registry.docker-cn.com"]
+  } 
+
+  dig @114.114.114.114 registry-1.docker.io
+  
+  vi /etc/hosts
+  34.228.211.243 registry-1.docker.io
+
+  sudo systemctl daemon-reload
+  sudo systemctl restart docker
+  docker info
+  docker pull hello-world
+
+  ``` 
+
 
 #### 1.7 vi 
 
@@ -203,6 +226,7 @@ https://www.linuxidc.com/Linux/2018-11/155220.htm
 
 #### 3.2 安装minikube 
 
+- 1.install
 
 ```
 curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.2.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
@@ -222,4 +246,94 @@ kubectl proxy
 minikube dashboard
 
 ```
+
+- 2.local registry
+  - registry
+      * docker pull registry
+      * docker run -d -p 5000:5000 -v $(pwd):/var/lib/registry --restart always --name registry registry:2
+      * vi /etc/docker/daemon.json
+        ```
+        "insecure-registries":["192.168.0.240:5000"],
+        ```
+      * sudo systemctl daemon-reload && sudo systemctl restart docker
+      * curl http://192.168.0.240:5000/v2/_catalog  
+  - push 
+      * docker tag hello-node:v1 192.168.0.240:5000/hello-node:v1
+      * docker push 192.168.0.240:5000/hello-node:v1
+      * curl http://192.168.0.240:5000/v2/_catalog  
+  - insecure-registry
+      * minikube delete && minikube start --insecure-registry=192.168.0.240:5000
+      * kubectl run hello-node --image=192.168.0.240:5000/hello-node
+      * kubectl get pods ,kubectl get deployments, kubectl get events
+  
+- 3.demo
+  - create file
+  
+    **server.js**
+    ``` js
+      var http = require('http');
+
+      var handleRequest = function(request, response) {
+        console.log('Received request for URL: ' + request.url);
+        response.writeHead(200);
+        response.end('Hello World!');
+      };
+      var www = http.createServer(handleRequest);
+      www.listen(8080);
+    ```
+    **Dockerfile**
+    ``` Dockerfile
+      FROM node:6.9.2
+      EXPOSE 8080
+      COPY server.js .
+      CMD node server.js
+    ```
+
+  - build
+    
+    docker build -t hello-node:v1 .
+
+    docker push 192.168.0.240:5000/hello-node:v1
+
+  - deployment
+
+    kubectl run hello-node --image=192.168.0.240:5000/hello-node:v1 --port=8080
+
+    eval $(minikube docker-env)  // eval $(minikuebe docker-env -u)
+
+    查看dep: kubectl get deployments
+
+    查看pod: kubectl get pods
+
+    查看events: kubectl get events
+
+  - service
+
+    kubectl expose deployment hello-node --type=LoadBalancer
+
+    kubectl get services
+
+    minikube service hello-node
+
+
+
+#### 3.3 
+
+- docker cmd
+  - docker images
+  - docker build
+  - docker push/ pull
+  -  
+
+- minikube cmd
+  - minikube delete && minikube start 
+  - minikube stop
+  - minikube logs
+
+- kubectl cmd
+  - kubectl get pods /nodes /depolyments /events
+
+
+
+
 
