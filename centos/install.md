@@ -315,7 +315,13 @@ minikube dashboard
 
     minikube service hello-node
 
-
+  - 发布流程
+    *  docker build -t name:tag .
+    *  docker tag name:tag p:name:tag
+    *  docker push p:name:tag
+    *  kubectl run name --image=p:name:tag
+      or： kubectl set image deployment/name name=p:name:tag
+    * 清除 kubectl delete service name & kubectl delete deployment name
 
 #### 3.3 
 
@@ -323,7 +329,7 @@ minikube dashboard
   - docker images
   - docker build
   - docker push/ pull
-  -  
+  - docker rm/ rmi
 
 - minikube cmd
   - minikube delete && minikube start 
