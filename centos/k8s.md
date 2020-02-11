@@ -2,7 +2,7 @@
 
 #### 3.1 安装VirtualBox
 
-- 没有硬件虚拟化，则需要安装
+- PC不支持硬件虚拟化，则需要安装
 ```
 sudo yum install kernel-devel kernel-headers make patch gcc
 
@@ -31,7 +31,7 @@ https://www.linuxidc.com/Linux/2018-11/155220.htm
 ```
 curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.2.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
-# start
+# start 推荐镜像不填，则选择阿里云默认镜像
 minikube start --registry-mirror=https://registry.docker-cn.com 
 
 # install kubectl 
@@ -48,6 +48,7 @@ minikube dashboard
 ```
 
 - 2.local registry
+  - 确保k8s可获得docker镜像，建立私有仓库的两种方法，在本地建立registry，每次下载到本地再推送到k8s集群通过insecure-registry注册的私有地址，minikube中无法实时获取到镜像更新，需要每次重启，非常蛋疼；真实环境，建habor仓库，并修改每个节点的docker认证仓库。
   - registry
       * docker pull registry
       * docker run -d -p 5000:5000 -v $(pwd):/var/lib/registry --restart always --name registry registry:2
@@ -234,6 +235,7 @@ kubectl port-forward [service-Name] [Ip:Ip]
   - 水平扩展: kubectl scale rc xx --replicas=10
   - 在容器中执行远程命令: kubectl exec [pod-name] -- [cmds]
   - configMap: kubectl create configmap xxx --from-literal=... | --from-file=... [path] | 
+  - kubectl patch 对少量资源进行修改，不会修改pod
 
 #### 3.6 概念
 - ip
@@ -278,21 +280,35 @@ kubectl describe po xxx
   手动指定ep kubectl get ep [svc] , 或
   ExternalName FQDN
   - 暴露服务
-  - 
-  NodePort, LoadBalance, Ingress 
+  - NodePort, LoadBalance, Ingress 
 
--挂载
+- 挂载
 
- - 类型
-  
-  emptyDir:  {}， medium: Memory | gitRepo | 
-
-  持久类型： hostPath | GCE |
-  PV | PVC 
-
-- 配置
    - 类型
+    
+    emptyDir:  {}， medium: Memory | gitRepo | 
 
-  args, env: name,value  
+    持久类型： hostPath | GCE |
+    PV | PVC 
 
-  configMap
+  - 配置
+     - 类型
+
+    args, env: name,value  
+
+    configMap
+
+- Deployment
+  - 使用deploy替代rc, rs 进行部署
+  - rollout stauts 查询部署状态 [undo] 回滚 [history] 记录  [pause] 
+  [--to-revision=1]
+  - kubectl patch deployment [dep] -p xxx
+  - kubectl set image deploy [dep] [image]    
+  - 发布类型
+    - 蓝绿发布 不停机老版本，全部流量切新版本
+    - 灰度发布/金丝雀发布， 一部分人使用新版，一部分人使用旧版本
+    - A/B测试，验证结论，可与蓝绿同时存在
+
+- statefulset 
+  - 痛点： 分布式存储服务，每个pod可能对应不同的挂载 
+  - 提供稳定的网络标识， 

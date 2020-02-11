@@ -151,6 +151,7 @@ pkill       匹配杀死
 
 cmd&            后台执行
 nohup cmd&      注销可用
+ps -ef          显示后台
 jobs            显示工作
 ```
 
