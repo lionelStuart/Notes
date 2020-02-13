@@ -173,6 +173,14 @@ jobs            显示工作
 #### 1.9 Tips
  - auth failure : sudo passwd root etc.
 
+#### 1.10 shell
+
+- 查找
+  - find / -name 万能， 遍历查找
+  - locate 从数据库索引查找，可模糊匹配,需要updatedb
+  - which 查找path中的可执行文件
+  - whereis 按名字查找二进制，源文件，需要updatedb
+
 ## 2.组件
 
 #### 2.1 seaweed
