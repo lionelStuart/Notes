@@ -174,7 +174,7 @@ func TestGRpc(t *testing.T) {
 
 ```
 
-- grpc流
+### 4.3 grpc流
 
 ``` pb
 service HelloService {
@@ -268,7 +268,7 @@ func TestGpcStream(t *testing.T){
 
 ```
 
-- 发布/订阅服务
+### 4.4 发布/订阅服务
 
 使用docker项目提供的pubsub包实现本地发布订阅
 
@@ -282,6 +282,7 @@ service PubSubService{
 ```
 
 pubsub.go 发布订阅的服务实现
+- 服务实现
 ``` go 
 type PubSubSvc struct {
 	pub *pubsub.Publisher
@@ -319,7 +320,7 @@ func (p *PubSubSvc) Subscribe(args *Hello.String, stream Hello.PubSubService_Sub
 
 }
 ```
-
+- 测试demo
 ``` go
 func TestPubSub(t *testing.T){
 	//server
@@ -389,6 +390,167 @@ func TestPubSub(t *testing.T){
 	time.Sleep(time.Second*15)
 }
 ```
+
+### 4.5 grpc 网关
+  - 安装
+``` bash
+go install \
+    github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+    github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+    github.com/golang/protobuf/protoc-gen-go
+```
+  - 定义proto文件
+
+rest.proto
+``` pb
+syntax="proto3";
+
+package Hello;
+
+import "google/api/annotations.proto";
+
+message StringMessage {
+    string value =1;
+}
+
+service RestService{
+    rpc Get(StringMessage) returns (StringMessage){
+        option (google.api.http) = {
+        get:"/get/{value}"
+        };
+    }
+    rpc Post(StringMessage) returns (StringMessage) {
+        option (google.api.http) = {
+        post:"/post"
+        body:"*"
+        };
+    }
+}
+```
+
+ - 生成pb.go 和 pb.gw.go
+
+由于上述插件使用了go mod 进行安装，尝试按照官方给的指令-I导入src 或 pkg/mod 下的import路径均失败，解决的办法是将protobuf和grp-gateway/third-party/googleapis下的proto文件夹全部拷贝到本地
+
+
+```
+// 生成grpc 文件
+protoc    --proto_path=proto --go_out=plugins=grpc:proto  rest.proto
+
+// 生成grpc和groc-gw文件
+protoc    --proto_path=proto --go_out=plugins=grpc:proto  --grpc-gateway_out=proto  rest.proto
+```
+
+- 编译服务代码
+
+服务编译错误：grpc.SupportPackageIsVersion，
+尝试更新包版本 
+```
+go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+go get -u google.golang.org/grpc
+gomod中replace的版本更新到1.17
+```
+
+- 服务实现
+
+``` go
+package main
+
+import (
+	"context"
+	"google.golang.org/grpc"
+	"net"
+	Rest "sisyphus/common/rpc/proto"
+)
+
+type RestSvcImpl struct {
+
+}
+
+func (r *RestSvcImpl) Get(ctx context.Context, message *Rest.StringMessage) (*Rest.StringMessage,error){
+	rep := &Rest.StringMessage{Value:"rest: "+ message.GetValue()}
+	return rep, nil
+}
+
+func (r *RestSvcImpl) Post(ctx context.Context, message *Rest.StringMessage) (*Rest.StringMessage,error){
+	rep := &Rest.StringMessage{Value:"rest post: "+ message.GetValue()}
+	return rep, nil
+}
+
+func main() {
+	server := grpc.NewServer()
+	Rest.RegisterRestServiceServer(server, &RestSvcImpl{})
+	lis, err := net.Listen("tcp", ":2234")
+	if err != nil {
+		panic( err)
+	}
+	server.Serve(lis)
+}
+
+```
+
+- 网关实现
+
+``` go
+package main
+
+import (
+	"context"  // Use "golang.org/x/net/context" for Golang version <= 1.6
+	"flag"
+	"net/http"
+
+	"github.com/golang/glog"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"google.golang.org/grpc"
+
+	gw "sisyphus/common/rpc/proto"  // Update
+)
+
+var (
+	// command-line options:
+	// gRPC server endpoint 反向代理指定的端口
+	grpcServerEndpoint = flag.String("grpc-server-endpoint",  "localhost:2234", "gRPC server endpoint")
+)
+
+func run() error {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Register gRPC server endpoint
+	// Note: Make sure the gRPC server is running properly and accessible
+	mux := runtime.NewServeMux()
+
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err := gw.RegisterRestServiceHandlerFromEndpoint(ctx, mux,  *grpcServerEndpoint, opts)
+	if err != nil {
+		return err
+	}
+
+	// Start HTTP server (and proxy calls to gRPC server endpoint)
+	// 在8081端口监听请求
+	return http.ListenAndServe(":8081", mux)
+}
+
+func main() {
+	flag.Parse()
+	defer glog.Flush()
+
+	if err := run(); err != nil {
+		glog.Fatal(err)
+	}
+}
+
+```
+
+- 测试指令
+```
+curl localhost:8081/get/gorpc
+
+curl -XPOST localhost:8081/post --data '{"value":"grpc"}'
+```
+
+
 
 
 #### 参考
