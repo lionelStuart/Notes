@@ -19,7 +19,7 @@ class Solution:
         return ret
         
 
-if __name__ == '__main__':
-    pass
-    s = Solution()
-    s.averageOfLevels()
+    if __name__ == '__main__':
+        pass
+        s = Solution()
+        s.averageOfLevels()
