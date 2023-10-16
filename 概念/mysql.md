@@ -18,12 +18,13 @@
     - next-key lock(记录锁+间隙锁) for update/share mode - 当前读(insert、update、delete)、快照读（普通select）
     - 不可避免的幻读场景(插入)：RR级别下未阻止插入、未立刻使用间隙锁
 - 日志
-    - buffer pool
+    - buffer pool、LRU算法
     - undo、redo
     - redo log buffer、page cache、刷盘时机
     - innodb_flush_log_at_trx_commit
     - bin log、主从复制、复制模式、sync_binlog 
     - 2TC、双1配置
+
 
 
 
