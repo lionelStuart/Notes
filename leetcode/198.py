@@ -1,4 +1,5 @@
 class Solution:
+    # 打家劫舍1， 不可相邻
     def rob(self, nums):
         f0 = [0 for i in range(len(nums))]
         f1 = [0 for i in range(len(nums))]
