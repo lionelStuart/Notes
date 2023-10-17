@@ -11,6 +11,8 @@ class Solution:
             for j in range(i+1, nums[i]+i+1):
                 if j>= len(nums)-1:
                     ret.append(f[i]+1)
+                    # 贪心，从首次到达的位置是最少跳数
+                    # return f[i] + 1
                     break
                 f[j] = min(f[j], f[i]+1)
         #         print(j, f[j], ret, f)
