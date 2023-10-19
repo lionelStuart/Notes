@@ -66,6 +66,7 @@ class LRUCache:
     # put 操作:
     # 存在键，修改并调整队列
     # 不存在，如果队列满则移除旧值，增加新值，未满则队尾添加
+    # 思考：双向链表+哈希可以实现全O1的数据结构
     def __init__(self, capacity: int):
         self.m = dict()
         self.l = EasyLink()
