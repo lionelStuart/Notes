@@ -15,7 +15,7 @@ def build_tree(lst:list):
     
     nodes = list()
     for idx in range(len(lst)):
-        if not lst[idx]:
+        if lst[idx] is None:
             nodes.append(None)
             continue
         nodes.append(TreeNode(lst[idx]))
