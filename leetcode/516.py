@@ -10,6 +10,7 @@ class Solution:
     # 在矩阵中只与左，下，左下的值相关
     # 斜向上求解
     # 求解所有的回文串，建立辅助的val矩阵，当长度变化时，取递增回文串，否则是max串或右下方的旧串
+    
     def longestPalindromeSubseq(self, s: str) -> int:
         pass
         n = len(s)
