@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
+	"sample/log"
 	metric2 "sample/metric"
 	"syscall"
 	"time"
@@ -16,6 +18,8 @@ func metric() {
 }
 
 func main() {
+	log.Init()
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func(context.Context) {
@@ -27,6 +31,7 @@ func main() {
 				return
 			case <-tk.C:
 				fmt.Printf("Echo Time Now:%#v\n", time.Now().Format(time.DateTime))
+				log.Logger().Debug("Run In Loop time", zap.String("time", time.Now().Format(time.DateTime)))
 			}
 		}
 	}(ctx)

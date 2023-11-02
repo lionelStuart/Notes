@@ -1,37 +1,38 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gogo
-  namespace: dev
+  name: smc-gateway
+  namespace: ns-smc-gateway
+  labels:
+    app: smc-gateway
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: gogo
+      app: smc-gateway
   template:
     metadata:
+      name: smc-gateway
       labels:
-        app: gogo
+        app: smc-gateway
     spec:
+      imagePullSecrets:
+        - name: harbor-secret
       containers:
-        - name: gogo-container
-          image: gogo:v1.2
-          imagePullPolicy: Never
-          resources:
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-            requests:
-              memory: "64Mi"
-              cpu: "100m"
-          ports:
-          - containerPort: 8080
-          volumeMounts:
-            - name: log-data               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
-              mountPath: /var/logs/
+        - name: smc-gateway-for-test                         # 业务容器的名称
+          image: 10.16.12.204/smc-gateway/smc-gateway:1.1    # 业务容器镜像的私服下载地址
+          imagePullPolicy: Always
+          env:                                               # 需要传入到业务容器中的环境变量，在服务启动的时候调用
+            - name: data_center
+              value: bx
+            - name: server_mode
+              value: test
+          volumeMounts:                                      # 指定业务日志在容器中输出的目录
+            - name: logdata
+              mountPath: /opt/logs
 
-
-        - name: filebeat-for-gogo                     # 指定 Filebeat 容器的名称
+        - name: filebeat-for-smc-gateway                     # 指定 Filebeat 容器的名称
           image: docker.elastic.co/beats/filebeat:7.3.0      # filebeat 镜像下载地址，这里使用的官方镜像仓库
           args: [                                            # 指定服务启动时的参数
             "-c", "/opt/filebeat/filebeat.yml",              # 注意这里，文件的路径和名称要和 Configmap 传入的路径和名称一致
@@ -53,11 +54,10 @@ spec:
           volumeMounts:
             - name: config                    # 指定 filebeat 配置文件要挂载的路径
               mountPath: /opt/filebeat/
-            - name: log-data               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
-              mountPath: /var/logs/       # 指定要将业务的日志挂载在 filebeat 容器中的路径，这个路径要和 Configmap 中指定的日志路径一致
-
+            - name: logdata               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
+              mountPath: /opt/logs/       # 指定要将业务的日志挂载在 filebeat 容器中的路径，这个路径要和 Configmap 中指定的日志路径一致
       volumes:
-        - name: log-data                 # 为前面声明名称为 logdata 的卷挂载一个 emptyDir 卷(filebeat 和业务容器都会挂载这个卷)
+        - name: logdata                 # 为前面声明名称为 logdata 的卷挂载一个 emptyDir 卷(filebeat 和业务容器都会挂载这个卷)
           emptyDir: {}
         - name: config                  # 为前面声明名称为 config 的卷（filebeat 配置文件）挂载一个 configmap，并指定configmap 的名称
           configMap:
@@ -65,19 +65,3 @@ spec:
             items:
               - key: filebeat.yml
                 path: filebeat.yml
-
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: gogo-svc
-  namespace: dev
-spec:
-  type: NodePort
-  ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30066
-  selector:
-    app: gogo

@@ -1,35 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gogo
+  name: gogo-file
   namespace: dev
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: gogo
+      app: gogo-file
   template:
     metadata:
       labels:
-        app: gogo
+        app: gogo-file
     spec:
       containers:
-        - name: gogo-container
-          image: gogo:v1.2
-          imagePullPolicy: Never
-          resources:
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-            requests:
-              memory: "64Mi"
-              cpu: "100m"
-          ports:
-          - containerPort: 8080
-          volumeMounts:
-            - name: log-data               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
-              mountPath: /var/logs/
-
 
         - name: filebeat-for-gogo                     # 指定 Filebeat 容器的名称
           image: docker.elastic.co/beats/filebeat:7.3.0      # filebeat 镜像下载地址，这里使用的官方镜像仓库
@@ -65,19 +49,3 @@ spec:
             items:
               - key: filebeat.yml
                 path: filebeat.yml
-
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: gogo-svc
-  namespace: dev
-spec:
-  type: NodePort
-  ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30066
-  selector:
-    app: gogo

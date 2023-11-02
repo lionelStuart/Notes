@@ -24,4 +24,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o=main  cmd/main.go
 EXPOSE 8080
 
 # Run
-CMD ["./main"]
+CMD ["bash", "./start.sh"]

@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: dev
+  labels:
+    k8s-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.idle_timeout: 2s
+    filebeat.inputs:
+    - type: log
+      paths:
+       - /var/logs/std.json
+      fields:
+        type: app-log
+      enabled: true
+      backoff: 1s
+      backoff_factor: 2
+      close_inactive: 1h
+      encoding: plain
+      harvester_buffer_size: 262144
+      max_backoff: 10s
+      max_bytes: 10485760
+      scan_frequency: 10s
+      tail_lines: true
+ 
+    filebeat.name: filebeat-shiper
+    filebeat.spool_zie: 50000
+    output.elasticsearch:
+      bulk_max_size: 8192
+      username: "elastic"
+      password: "1G3T8T4Nzbm8T7rnn8te363N"
+      protocol: "https"
+      ssl.verification_mode: none
+      hosts:
+      - 10.100.135.162:9200
+      index: dev-%{[fields.type]}-*
+      indices:
+        - index: dev-app-log-%{+yyyy.MM.dd}
+          when.equals:
+            fields.type: app-log
+      workers: 1
+    processors:
+    - drop_fields:
+        fields:
+        - log.level
+        - log.origin
+        - timestamp
+        - message
+        - app
+        - env
+        - ecs.version
+    - decode_json_fields:
+        fields:
+        - message
+        max_depth: 1
+        overwrite_keys: true
+    setup.ilm.enabled: false
+    setup.template.name: dev-log
+    setup.template.pattern: dev-*
+    setup.template.overwrite: true
+    setup.template.enabled: true
