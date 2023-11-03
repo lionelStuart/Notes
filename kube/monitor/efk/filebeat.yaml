@@ -31,11 +31,11 @@ data:
     output.elasticsearch:
       bulk_max_size: 8192
       username: "elastic"
-      password: "1G3T8T4Nzbm8T7rnn8te363N"
-      protocol: "https"
+      password: "280e7mAy4uq56vLMVY32RJK2"
+      protocol: "http"
       ssl.verification_mode: none
       hosts:
-      - 10.100.135.162:9200
+      - 10.101.91.108:9200
       index: dev-%{[fields.type]}-*
       indices:
         - index: dev-app-log-%{+yyyy.MM.dd}
@@ -45,12 +45,6 @@ data:
     processors:
     - drop_fields:
         fields:
-        - log.level
-        - log.origin
-        - timestamp
-        - message
-        - app
-        - env
         - ecs.version
     - decode_json_fields:
         fields:
