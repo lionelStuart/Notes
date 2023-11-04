@@ -5,6 +5,9 @@ FROM golang:1.21
 # Set destination for COPY
 WORKDIR /app
 
+ENV GOPROXY='https://goproxy.cn,direct'
+
+
 # Download Go modules
 COPY . ./
 RUN go mod download

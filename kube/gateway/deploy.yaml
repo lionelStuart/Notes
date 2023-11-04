@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-gateway
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: go-gateway
+  template:
+    metadata:
+      labels:
+        app: go-gateway
+    spec:
+      containers:
+        - name: go-gateway-container
+          image: go-gateway:v1.1
+          imagePullPolicy: Never
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+          env:
+            - name: GOGO_ADDR
+              value: "10.111.209.59:8080"
+            - name: SKY_ADDR
+              value: "10.99.183.197:11800"
+          ports:
+          - containerPort: 8090
+          volumeMounts:
+            - name: log-data               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
+              mountPath: /var/logs/
+
+
+        - name: filebeat-for-go-gateway                     # 指定 Filebeat 容器的名称
+          image: docker.elastic.co/beats/filebeat:7.3.0      # filebeat 镜像下载地址，这里使用的官方镜像仓库
+          args: [                                            # 指定服务启动时的参数
+            "-c", "/opt/filebeat/filebeat.yml",              # 注意这里，文件的路径和名称要和 Configmap 传入的路径和名称一致
+            "-e",
+          ]
+          env:
+            - name: POD_IP                    # 这里是将 pod 的 IP 地址赋值给这个变量传入容器中，便于后面 Filebeat 在日志中添加自定义的字段信息
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: pod_name                  # 这里是将 pod 的名称赋值给这个变量，便于后面 Filebeat 在日志中添加自定义的字段信息
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+          securityContext:                  # 这里用于设置 Pod 的安全上下文
+            runAsUser: 0                    # 指定容器内的服务以 ID 为 0 的用户运行（也就是root）
+          volumeMounts:
+            - name: config                    # 指定 filebeat 配置文件要挂载的路径
+              mountPath: /opt/filebeat/
+            - name: log-data               # 指定卷的名称，这个名称要和前面业务容器指定的日志路径的卷名称一致，这样后面才会挂载同一个 emptyDir
+              mountPath: /var/logs/       # 指定要将业务的日志挂载在 filebeat 容器中的路径，这个路径要和 Configmap 中指定的日志路径一致
+
+      volumes:
+        - name: log-data                 # 为前面声明名称为 logdata 的卷挂载一个 emptyDir 卷(filebeat 和业务容器都会挂载这个卷)
+          emptyDir: {}
+        - name: config                  # 为前面声明名称为 config 的卷（filebeat 配置文件）挂载一个 configmap，并指定configmap 的名称
+          configMap:
+            name: filebeat-config
+            items:
+              - key: filebeat.yml
+                path: filebeat.yml
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-gateway-svc
+  namespace: dev
+spec:
+  type: NodePort
+  ports:
+    - port: 8090
+      targetPort: 8090
+      nodePort: 30067
+  selector:
+    app: go-gateway

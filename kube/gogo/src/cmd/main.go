@@ -7,13 +7,13 @@ import (
 	"os"
 	"os/signal"
 	"sample/log"
-	metric2 "sample/metric"
+	sev "sample/server"
 	"syscall"
 	"time"
 )
 
-func metric() {
-	m := &metric2.Server{}
+func startServer() {
+	m := &sev.Server{}
 	m.Start()
 }
 
@@ -37,7 +37,7 @@ func main() {
 	}(ctx)
 
 	go func() {
-		metric()
+		startServer()
 	}()
 
 	c := make(chan os.Signal)

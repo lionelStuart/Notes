@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sky-ui-deployment
+  namespace: dev
+  labels:
+    app: sky-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sky-ui
+  template:
+    metadata:
+      labels:
+        app: sky-ui
+    spec:
+      containers:
+        - name: sky-ui
+          image: apache/skywalking-ui:9.3.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: page
+          env:
+            - name: SW_OAP_ADDRESS
+              value: http://oap:12800
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sky-ui
+  namespace: dev
+  labels:
+    service: sky-ui
+spec:
+  ports:
+    - port: 8080
+      name: page
+      nodePort: 31008
+  type: NodePort
+  selector:
+    app: sky-ui
