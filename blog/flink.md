@@ -22,6 +22,11 @@
 - k8s operator 官方推荐的k8s native模式
 
 
+3. 关键词
+- 有界流、无界流
+- 批处理、流处理
+- 算子、source\sink、dataflows
+
 
 ## 学习
 

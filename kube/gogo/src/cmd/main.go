@@ -30,7 +30,7 @@ func main() {
 				fmt.Println("Killed")
 				return
 			case <-tk.C:
-				fmt.Printf("Echo Time Now:%#v\n", time.Now().Format(time.DateTime))
+				fmt.Printf("Run In Loop time J:%#v\n", time.Now().Format(time.DateTime))
 				log.Logger().Debug("Run In Loop time", zap.String("time", time.Now().Format(time.DateTime)))
 			}
 		}

@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"math/rand"
 	"sample/tracer"
 	"time"
 )
@@ -30,9 +31,15 @@ func (m *Server) Start() {
 
 	r := gin.Default()
 	tracer.Init(r)
-
+	vi := &VisitController{}
+	vi.Init()
+	defer vi.UnInit()
 	r.GET("/resource", func(c *gin.Context) {
 		now := time.Now().Format(time.DateTime)
+
+		id := rand.Intn(10)
+		vi.Add(id)
+
 		c.JSON(200, gin.H{
 			"message": fmt.Sprintf("recv message on %s", now),
 			"status":  "ok",

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: gogo-container
-          image: gogo:v1.4
+          image: gogo:v1.5
           imagePullPolicy: Never
           resources:
             limits:
@@ -27,6 +27,8 @@ spec:
           env:
             - name: SKY_ADDR
               value: "10.99.183.197:11800"
+            - name: KAFKA_ADDR
+              value: "10.107.89.129:9092"
           ports:
           - containerPort: 8080
           volumeMounts:

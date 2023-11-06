@@ -1,9 +1,10 @@
 package log
 
 import (
+	"os"
+
 	"go.elastic.co/ecszap"
 	"go.uber.org/zap"
-	"os"
 )
 
 var logger *zap.Logger
@@ -16,5 +17,5 @@ func Init() {
 	encoderConfig := ecszap.NewDefaultEncoderConfig()
 	core := ecszap.NewCore(encoderConfig, os.Stdout, zap.DebugLevel)
 	logger = zap.New(core, zap.AddCaller())
-	logger = logger.With(zap.String("app", "gogo")).With(zap.String("env", "dev"))
+	logger = logger.With(zap.String("app", "gogo-gateway")).With(zap.String("env", "dev"))
 }

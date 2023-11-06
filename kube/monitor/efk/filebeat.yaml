@@ -42,15 +42,15 @@ data:
           when.equals:
             fields.type: app-log
       workers: 1
-    processors:
-    - drop_fields:
-        fields:
-        - ecs.version
-    - decode_json_fields:
-        fields:
-        - message
-        max_depth: 1
-        overwrite_keys: true
+    # processors:
+    # - drop_fields:
+    #     fields:
+    #     - ecs.version
+    # - decode_json_fields:
+    #     fields:
+    #     - message
+    #     max_depth: 1
+    #     overwrite_keys: true
     setup.ilm.enabled: false
     setup.template.name: dev-log
     setup.template.pattern: dev-*
