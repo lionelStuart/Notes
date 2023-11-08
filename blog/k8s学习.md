@@ -6,3 +6,11 @@
 
 Local PV 
 解决hostPath不好用的问题，定义PV时需要节点亲和性
+
+## docker 原理
+
+- cgroup(用量)+chroot(权限)+namespace(名字空间)=LXC
+- LXC+AUFS(堆叠虚拟文件系统)=docker
+- namespac限制资源可见性
+- cgroup限制用量
+- AUFS是逻辑目录
