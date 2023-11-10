@@ -22,10 +22,18 @@
 - k8s operator 官方推荐的k8s native模式
 
 
+
 3. 关键词
 - 有界流、无界流
 - 批处理、流处理
 - 算子、source\sink、dataflows
+
+4. 任务部署 on k8s
+- flink上部署taskmanager 和jobmanager
+- jobmanager 负责任务调度和检查点、故障恢复，至少有一个jobmanager
+- taskmanager 负责任务执行
+- 通过pyflink部署应用,从本地client递交任务，包括镜像和py入口等信息，由k8s负责调度
+
 
 
 ## 学习

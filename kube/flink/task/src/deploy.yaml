@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyflink-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pyflink-app
+  template:
+    metadata:
+      labels:
+        app: pyflink-app
+    spec:
+      containers:
+      - name: pyflink-app
+        image: flink-test:v1.0 # Docker镜像名称
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8081 # 应用程序端口号
